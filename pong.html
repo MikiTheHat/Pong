@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html lang="en">
+	<head>
+		<meta charset="UTF-8" />
+		<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+		<title>Pong Game</title>
+		<style>
+			body {
+				display: flex;
+				justify-content: center;
+				align-items: center;
+				height: 100vh;
+				margin: 0;
+				background-color: black;
+			}
+			canvas {
+				border: 1px solid white;
+			}
+		</style>
+	</head>
+	<body>
+		<canvas id="pong" width="600" height="400"></canvas>
+		<script>
+			const canvas = document.getElementById("pong");
+			const context = canvas.getContext("2d");
+
+			// Paddle properties
+			const paddleWidth = 10;
+			const paddleHeight = 100;
+			const playerX = 0;
+			const aiX = canvas.width - paddleWidth;
+			let playerY = (canvas.height - paddleHeight) / 2;
+			let aiY = (canvas.height - paddleHeight) / 2;
+
+			// Ball properties
+			let ballX = canvas.width / 2;
+			let ballY = canvas.height / 2;
+			const ballSize = 10;
+			let ballSpeedX = 5;
+			let ballSpeedY = 5;
+
+			// Draw functions
+			function drawRect(x, y, w, h, color) {
+				context.fillStyle = color;
+				context.fillRect(x, y, w, h);
+			}
+
+			function drawBall(x, y, size, color) {
+				context.fillStyle = color;
+				context.beginPath();
+				context.arc(x, y, size, 0, Math.PI * 2, false);
+				context.closePath();
+				context.fill();
+			}
+
+			// Game loop
+			function game() {
+				update();
+				render();
+			}
+
+			// Update game objects
+			function update() {
+				ballX += ballSpeedX;
+				ballY += ballSpeedY;
+
+				// Ball collision with top and bottom walls
+				if (ballY + ballSize > canvas.height || ballY - ballSize < 0) {
+					ballSpeedY = -ballSpeedY;
+				}
+
+				// Ball collision with paddles
+				if (
+					ballX - ballSize < playerX + paddleWidth &&
+					ballY > playerY &&
+					ballY < playerY + paddleHeight
+				) {
+					ballSpeedX = -ballSpeedX;
+				}
+
+				if (
+					ballX + ballSize > aiX &&
+					ballY > aiY &&
+					ballY < aiY + paddleHeight
+				) {
+					ballSpeedX = -ballSpeedX;
+				}
+
+				// Ball reset on out of bounds
+				if (ballX + ballSize < 0 || ballX - ballSize > canvas.width) {
+					ballX = canvas.width / 2;
+					ballY = canvas.height / 2;
+					ballSpeedX = -ballSpeedX;
+				}
+
+				// Simple AI movement
+				aiY += (ballY - (aiY + paddleHeight / 2)) * 0.05;
+			}
+
+			// Render game objects
+			function render() {
+				drawRect(0, 0, canvas.width, canvas.height, "black");
+				drawRect(playerX, playerY, paddleWidth, paddleHeight, "white");
+				drawRect(aiX, aiY, paddleWidth, paddleHeight, "white");
+				drawBall(ballX, ballY, ballSize, "white");
+			}
+
+			// Paddle control
+			canvas.addEventListener("mousemove", function (event) {
+				let rect = canvas.getBoundingClientRect();
+				playerY = event.clientY - rect.top - paddleHeight / 2;
+			});
+
+			// Start game loop
+			setInterval(game, 1000 / 60);
+		</script>
+	</body>
+</html>
